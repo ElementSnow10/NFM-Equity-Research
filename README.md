@@ -17,18 +17,19 @@ Monitor deterioration signals and trigger early warnings
 Maintain a dynamic Top 50 list via automated churn decisions
 
 High-Level Architecture:
+
 Market Universe (~6,000 Stocks)
-        ↓
+
 Fundamental Data Ingestion
-        ↓
+
 Feature Engineering (40+ Parameters)
-        ↓
+        
 NFM Weighted Scoring Engine
-        ↓
+        
 Top 50 Stock Selection
-        ↓
+        
 LLM-Based Research & Explanation
-        ↓
+        
 Continuous Monitoring & Alerts
-        ↓
+        
 Churn (Add / Remove Companies)
