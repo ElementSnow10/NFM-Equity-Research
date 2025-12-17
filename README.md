@@ -6,30 +6,19 @@ This project is designed to emulate and potentially outperform high-performance 
 
 Objectives:
 
-Build a scalable fundamentals-driven equity screening engine
-
-Rank Indian equities using a weighted New Fundamental Model
-
-Generate human-readable reasoning for stock selection using LLMs
-
-Monitor deterioration signals and trigger early warnings
-
-Maintain a dynamic Top 50 list via automated churn decisions
+- Build a scalable fundamentals-driven equity screening engine
+- Rank Indian equities using a weighted New Fundamental Model
+- Generate human-readable reasoning for stock selection using LLMs
+- Monitor deterioration signals and trigger early warnings
+- Maintain a dynamic Top 50 list via automated churn decisions
 
 High-Level Architecture:
 
-Market Universe (~6,000 Stocks)
-
-Fundamental Data Ingestion
-
-Feature Engineering (40+ Parameters)
-        
-NFM Weighted Scoring Engine
-        
-Top 50 Stock Selection
-        
-LLM-Based Research & Explanation
-        
-Continuous Monitoring & Alerts
-        
-Churn (Add / Remove Companies)
+- Market Universe (~6,000 Stocks)
+- Fundamental Data Ingestion
+- Feature Engineering (40+ Parameters)
+- NFM Weighted Scoring Engine  
+- Top 50 Stock Selection   
+- LLM-Based Research & Explanation    
+- Continuous Monitoring & Alerts       
+- Churn (Add / Remove Companies)
