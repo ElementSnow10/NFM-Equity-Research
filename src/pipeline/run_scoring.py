@@ -54,7 +54,8 @@ def run():
             print("------------------------------\n")
 
     # 5. Save Output
-    output_path = os.path.join(settings.DATA_DIR, 'reports', 'top_50.csv')
+    # 5. Save Output
+    output_path = os.path.join(settings.BASE_DIR, 'reports', 'top_50.csv')
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
     top_50.to_csv(output_path, index=False)
