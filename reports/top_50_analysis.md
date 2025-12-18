@@ -3,6 +3,9 @@
 ## Methodology Note
 This report presents LLM-generated fundamental explanations for the Top 50 ranked Indian companies. Rankings are based on a weighted composite score derived from profitability, growth, balance sheet strength, valuation, and stability metrics. The explanations aim to provide human-readable justification for model decisions.
 
+## Score Distribution Snapshot
+![Top 10 Composite Scores](assets/top10_scores.png)
+
 ## Rank 1 – ADVANIHOTR
 
 1. Business Strength Summary

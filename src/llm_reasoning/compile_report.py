@@ -27,6 +27,10 @@ def compile_report(explanations_file, output_file):
         f.write("Rankings are based on a weighted composite score derived from profitability, growth, balance sheet strength, ")
         f.write("valuation, and stability metrics. The explanations aim to provide human-readable justification for model decisions.\n\n")
         
+        # Chart
+        f.write("## Score Distribution Snapshot\n")
+        f.write("![Top 10 Composite Scores](assets/top10_scores.png)\n\n")
+        
         # Compile each company
         for idx, item in enumerate(explanations):
             rank = idx + 1
