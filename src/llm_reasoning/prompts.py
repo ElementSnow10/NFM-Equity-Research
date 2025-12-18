@@ -50,3 +50,48 @@ You are a top-tier equity research analyst for the Indian Stock Market.
 Plain text, max 3-4 sentences. Professional tone.
 """
     return prompt.strip()
+
+def generate_churn_prompt(company_row, decision, rank, prev_rank=None):
+    """
+    Generates a prompt for explaining churn decisions (Add/Remove).
+    
+    Args:
+        company_row (pd.Series): Company metrics
+        decision (str): 'ADD' or 'REMOVE'
+        rank (int): Current rank
+        prev_rank (int, optional): Previous rank
+    """
+    ticker = company_row.get('ticker', 'Unknown')
+    
+    # Construct a context string of key metrics to help the LLM find the cause
+    metrics_context = (
+        f"ROE: {company_row.get('roe', 0)*100:.1f}%, "
+        f"RevGrowth: {company_row.get('revenue_cagr', 0)*100:.1f}%, "
+        f"Debt/Eq: {company_row.get('debt_to_equity', 0):.2f}, "
+        f"Score: {company_row.get('final_score', 0):.1f}"
+    )
+
+    if decision == "REMOVE":
+        return f"""
+You are a Portfolio Manager.
+**Decision**: REMOVE **{ticker}** from Top 50.
+**Current Status**: Rank fell to #{rank} (Threshold is Top 50).
+**Metrics**: {metrics_context}
+
+**Task**: 
+Explain in 1 strict sentence why this company's fundamentals have deteriorated or why it is no longer elite. 
+Focus on the weak metrics relative to the dropped rank.
+"""
+    
+    elif decision == "ADD":
+        return f"""
+You are a Portfolio Manager.
+**Decision**: ADD **{ticker}** to Top 50.
+**Current Status**: Rank surged to #{rank}.
+**Metrics**: {metrics_context}
+
+**Task**:
+Explain in 1 strict sentence why this company is a strong new addition. 
+Focus on the improved or superior metrics.
+"""
+    return ""

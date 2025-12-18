@@ -103,6 +103,7 @@ def profit_cagr(profit_start, profit_end, years):
     return (safe_div(profit_end, profit_start) ** (1 / years)) - 1
 
 
+
 # ------------------------
 # Leverage & Solvency
 # ------------------------
@@ -177,6 +178,7 @@ def earnings_volatility(std_net_income, mean_net_income):
         return np.nan
     return abs(std_net_income) / abs(mean_net_income)
 
+#promoter pledge of shares?
 
 
 

@@ -13,7 +13,7 @@ def normalize_metrics(df):
     
     # List of metrics where Lower is Better
     # We will invert the rank for these: 1 - percentile
-    LOWER_IS_BETTER = ["debt_to_equity", "earnings_volatility"] 
+    LOWER_IS_BETTER = settings.LOWER_IS_BETTER 
     
     weights = settings.SCORING_WEIGHTS
     

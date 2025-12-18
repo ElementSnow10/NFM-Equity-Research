@@ -55,23 +55,32 @@ YAHOO_MAPPING = {
 # Positive weights = higher is better.
 # For metrics where lower is better (Debt/Equity), Scorer will handle inversion before applying weight.
 SCORING_WEIGHTS = {
-    # Profitability (Weight: 3.5 total)
-    "roe": 2.0,
-    "roce": 1.5,
-    "operating_margin": 1.0,
+    # Profitability (35 points)
+    "roe": 15.0,
+    "roce": 10.0,
+    "net_margin": 5.0,
+    "operating_margin": 5.0,
     
-    # Growth (Weight: 3.0 total)
-    "revenue_cagr": 1.5,
-    "profit_cagr": 2.0,
+    # Growth (25 points)
+    "revenue_cagr": 15.0,
+    "profit_cagr": 10.0,
     
-    # Efficiency (Weight: 0.5)
-    "asset_turnover": 0.5,
+    # Cash Flow (20 points)
+    "ocf_ratio": 5.0,
+    "fcf_margin": 15.0,
     
-    # Leverage (Weight: 1.5 total)
-    # Note: These ranks will be inverted by the scorer
-    "debt_to_equity": 1.5,
+    # Leverage (10 points) - Scorer inverts these ranks if Lower is Better
+    "debt_to_equity": 5.0,
+    "interest_coverage": 5.0,
     
-    # Cash Flow (Weight: 1.5 total)
-    "fcf_margin": 1.5
+    # Efficiency & Stability (10 points)
+    "asset_turnover": 5.0,
+    "earnings_volatility": 5.0
 }
+
+# Metrics where lower values are better (Rank Inversion)
+LOWER_IS_BETTER = [
+    "debt_to_equity",
+    "earnings_volatility"
+]
 
