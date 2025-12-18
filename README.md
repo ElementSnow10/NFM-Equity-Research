@@ -1,4 +1,4 @@
-NFM-Equity-Research is a research-focused equity analysis platform that uses a New Fundamental Model (NFM) combined with LLM-based reasoning to identify, rank, and continuously monitor the fundamentally strongest companies in the Indian stock market.
+NFM-Equity-Research is a research-focused equity analysis platform that uses a New Fundamental Model (NFM) combined with LLM-based reasoning to identify, rank, and continuously monitor the fundamentally strongest companies in the Indian stock market. Sync all.
 
 The system evaluates ~6,000 listed Indian companies using multi-factor fundamental data, selects the Top 50 companies, generates explainable research justifications, and dynamically updates the list as business fundamentals evolve.
 
