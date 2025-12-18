@@ -6,6 +6,8 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 RAW_DATA_PATH = os.path.join(DATA_DIR, 'raw')
 
 # Market Config
+# PROCESSED DATA PATH
+PROCESSED_DATA_PATH = os.path.join(DATA_DIR, 'processed', 'features.csv')
 MARKET_SUFFIX = '.NS'  # NSE stocks
 START_DATE = '2020-01-01'
 
@@ -33,3 +35,18 @@ REQUIRED_FIELDS = [
     # Efficiency
     "total_assets"
 ]
+
+# Yahoo Finance Field Mapping
+# Key: Internal Field, Value: Yahoo Finance DataFrame Index (row literal)
+YAHOO_MAPPING = {
+    "net_income": ["Net Income", "Net Income Common Stockholders"],
+    "equity": ["Stockholders Equity", "Total Stockholder Equity"],
+    "ebit": ["EBIT", "Operating Income", "EBITDA"], # Fallback chain
+    "revenue": ["Total Revenue", "Operating Revenue"],
+    "total_debt": ["Total Debt"],
+    "interest_expense": ["Interest Expense", "Interest Paid"],
+    "cfo": ["Operating Cash Flow", "Total Cash From Operating Activities"],
+    "capex": ["Capital Expenditure", "Total Capitalization"],
+    "total_assets": ["Total Assets"],
+    "current_liabilities": ["Current Liabilities", "Total Current Liabilities"] # For Capital Employed calc
+}
