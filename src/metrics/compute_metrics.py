@@ -6,6 +6,28 @@ They take primitive numeric inputs and return floats.
 Missing / invalid inputs are handled safely.
 
 """
+# ===============================
+# FINAL CORE METRICS (LOCKED v1)
+# ===============================
+# Profitability:
+#   roe, roce, net_profit_margin, operating_margin
+#
+# Growth:
+#   revenue_cagr, profit_cagr
+#
+# Leverage:
+#   debt_to_equity, interest_coverage
+#
+# Cash Flow:
+#   operating_cf_ratio, free_cash_flow, fcf_margin
+#
+# Efficiency:
+#   asset_turnover
+#
+# Stability:
+#   earnings_volatility
+# ===============================
+
 
 import numpy as np
 
@@ -67,9 +89,9 @@ def revenue_cagr(revenue_start, revenue_end, years):
     """
     Revenue CAGR over given years.
     """
-    if years <= 0:
+    if years <= 0 or revenue_start <= 0 or revenue_end <= 0:
         return np.nan
-    return (safe_div(revenue_end, revenue_start) ** (1 / years)) - 1
+    return (revenue_end / revenue_start) ** (1 / years) - 1
 
 
 def profit_cagr(profit_start, profit_end, years):
@@ -142,13 +164,6 @@ def asset_turnover(revenue, total_assets):
     return safe_div(revenue, total_assets)
 
 
-def inventory_turnover(cogs, inventory):
-    """
-    Inventory Turnover.
-    """
-    return safe_div(cogs, inventory)
-
-
 # ------------------------
 # Stability & Quality
 # ------------------------
@@ -156,33 +171,14 @@ def inventory_turnover(cogs, inventory):
 def earnings_volatility(std_net_income, mean_net_income):
     """
     Earnings volatility (lower is better).
+    Coefficient of variation with safety check.
     """
-    return safe_div(std_net_income, mean_net_income)
+    if mean_net_income == 0 or mean_net_income is None:
+        return np.nan
+    return abs(std_net_income) / abs(mean_net_income)
 
 
-def revenue_volatility(std_revenue, mean_revenue):
-    """
-    Revenue volatility.
-    """
-    return safe_div(std_revenue, mean_revenue)
 
-
-# ------------------------
-# Market & Valuation (optional)
-# ------------------------
-
-def pe_ratio(price, eps):
-    """
-    Price to Earnings ratio.
-    """
-    return safe_div(price, eps)
-
-
-def pb_ratio(market_cap, equity):
-    """
-    Price to Book ratio.
-    """
-    return safe_div(market_cap, equity)
 
 
 # ------------------------
