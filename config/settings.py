@@ -50,3 +50,28 @@ YAHOO_MAPPING = {
     "total_assets": ["Total Assets"],
     "current_liabilities": ["Current Liabilities", "Total Current Liabilities"] # For Capital Employed calc
 }
+
+# Scoring Weights
+# Positive weights = higher is better.
+# For metrics where lower is better (Debt/Equity), Scorer will handle inversion before applying weight.
+SCORING_WEIGHTS = {
+    # Profitability (Weight: 3.5 total)
+    "roe": 2.0,
+    "roce": 1.5,
+    "operating_margin": 1.0,
+    
+    # Growth (Weight: 3.0 total)
+    "revenue_cagr": 1.5,
+    "profit_cagr": 2.0,
+    
+    # Efficiency (Weight: 0.5)
+    "asset_turnover": 0.5,
+    
+    # Leverage (Weight: 1.5 total)
+    # Note: These ranks will be inverted by the scorer
+    "debt_to_equity": 1.5,
+    
+    # Cash Flow (Weight: 1.5 total)
+    "fcf_margin": 1.5
+}
+
