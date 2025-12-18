@@ -19,3 +19,23 @@
 - **Duplicates**: PASS. All tickers are unique.
 - **Zero Values**: PASS. All companies have non-zero Revenue and Assets.
 
+## 2. Unstable / Noisy Metrics
+
+- **Revenue CAGR**: Can be misleading if the base year was anomalous (e.g., pandemic lows), artificially inflating growth rates.
+- **Free Cash Flow (FCF)**: Highly volatile for capital-intensive sectors (e.g., Telecommunications, Oil & Gas) due to irregular, large-scale capital expenditure cycles.
+- **Net Margin**: Sensitive to one-off income or expenses (e.g., asset sales, tax refunds), potentially distorting true operating stability.
+- **Debt-to-Equity**: May look artificially high for companies with negative or low equity due to buybacks or accumulated losses, not necessarily indicating distress.
+
+## 3. Assumptions & Limitations
+
+### Assumptions
+- **Data Integrity**: Financial data is assumed to be accurate as reported by the data provider/company filings; no independent forensic verification is performed.
+- **Standardized Schema**: Generic metrics (e.g., EBIT, EBITDA) are applied across all sectors, assuming reasonable comparability even for specialized sectors like Banking (where Net Interest Income is standard).
+- **Recency**: The latest available annual data is treated as the current representation of company fundamentals, potentially ignoring intra-year quarterly shifts.
+
+### Limitations
+- **Macro Blindness**: The model does not explicitly adjust for macroeconomic shocks (inflation, interest rate hikes) or regulatory overhauls.
+- **Qualitative Gap**: Critical qualitative factors—management quality, corporate governance, and brand strength—are only indirectly captured through financial outcomes.
+- **Reporting Lag**: Alerts might differ from real-time events solely due to the time lag between an event and its reflection in quarterly/annual financial disclosures.
+
+
