@@ -29,7 +29,7 @@ def compile_report(explanations_file, output_file):
         
         # Chart
         f.write("## Score Distribution Snapshot\n")
-        f.write("![Top 10 Composite Scores](assets/top10_scores.png)\n\n")
+        f.write("![Top 50 Composite Scores](assets/top50_scores.png)\n\n")
         
         # Compile each company
         for idx, item in enumerate(explanations):
