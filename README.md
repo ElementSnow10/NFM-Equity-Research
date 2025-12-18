@@ -22,3 +22,18 @@ High-Level Architecture:
 - LLM-Based Research & Explanation    
 - Continuous Monitoring & Alerts       
 - Churn (Add / Remove Companies)
+
+
+NFM-Equity-Research/
+│
+├── data/                 # Raw & processed financial data
+├── features/             # Feature engineering & parameter logic
+├── scoring/              # NFM scoring & ranking models
+├── monitoring/           # Continuous tracking & alerts
+├── churn/                # Add/remove decision logic
+├── llm/                  # Prompting & explanation generation
+├── reports/              # Company-level research outputs
+├── notebooks/            # Research & experimentation
+├── config/               # Parameter configs & weights
+├── README.md
+└── requirements.txt
