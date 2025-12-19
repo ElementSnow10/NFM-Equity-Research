@@ -31,6 +31,8 @@ jobs:
     - name: Run Pipeline
       # Timeout after 350 minutes (Just under 6h limit) to ensure we have time to commit if script handles timeouts gracefully
       # For now, let's just run. pipeline_run.py handles errors but not timeouts.
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       run: |
         python pipeline_run.py
         
