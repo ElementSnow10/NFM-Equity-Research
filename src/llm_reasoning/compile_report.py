@@ -44,8 +44,8 @@ def compile_report(explanations_file, output_file):
     logging.info(f"Report compiled successfully at {output_file}")
 
 if __name__ == "__main__":
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    INPUT = os.path.join(base_dir, 'reports', 'llm_explanations.json')
-    OUTPUT = os.path.join(base_dir, 'reports', 'top_50_analysis.md')
+    from config import settings
+    INPUT = os.path.join(settings.DATA_DIR, 'reports', 'llm_explanations.json')
+    OUTPUT = os.path.join(settings.DATA_DIR, 'reports', 'top_50_analysis.md')
     
     compile_report(INPUT, OUTPUT)

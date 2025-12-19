@@ -61,33 +61,26 @@ def run():
         print("All tickers processed!")
         return
 
-    # 3. Processing Loop
+    # 3. Processing Loop (Parallelized)
     batch_data = []
-    BATCH_SIZE = 10 # Save every 10 tickers
+    BATCH_SIZE = 10 
+    MAX_WORKERS = 5 # Moderate concurrency to respect API limits
     
-    # Use tqdm for progress bar
-    progress_bar = tqdm(tickers_to_process, desc="Processing Stocks", unit="ticker")
+    import concurrent.futures
     
-    for ticker in progress_bar:
-        # Update progress bar description
-        progress_bar.set_description(f"Processing {ticker}")
-        
+    print(f"Starting parallel processing with {MAX_WORKERS} workers...")
+    
+    def process_one_ticker(ticker):
+        """Helper to run the full chain for one ticker"""
         # A. Fetch
-        # Note: fetcher.fetch_financials handles exceptions and returns None on failure
         raw_data = fetcher.fetch_financials(ticker)
-        
         if not raw_data:
-            # Even if fetch failed, we might want to record it as "processed" to avoid infinite retries?
-            # ideally yes, maybe add to a 'failed.csv' or just ignore. 
-            # For now, let's NOT add to processed_tickers so it retries next time? 
-            # Or if it's a permanent error (delisted), we are stuck.
-            # safe option: just log and continue.
-            continue
+            return None
             
         # B. Process
         processed_data = processor.process_ticker_data(ticker, raw_data)
         if not processed_data:
-            continue
+            return None
             
         # C. Compute Metrics
         try:
@@ -95,13 +88,30 @@ def run():
         except Exception:
             metrics = {}
             
-        combined_row = {**processed_data, **metrics}
-        batch_data.append(combined_row)
+        return {**processed_data, **metrics}
+
+    # Use tqdm for progress bar
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        # Submit all tasks
+        future_to_ticker = {executor.submit(process_one_ticker, t): t for t in tickers_to_process}
         
-        # D. Batch Save
-        if len(batch_data) >= BATCH_SIZE:
-            save_batch(batch_data, output_path)
-            batch_data = [] # Clear buffer
+        # Process as they complete
+        progress_bar = tqdm(concurrent.futures.as_completed(future_to_ticker), total=len(tickers_to_process), desc="Processing Stocks", unit="ticker")
+        
+        for future in progress_bar:
+            ticker = future_to_ticker[future]
+            try:
+                result = future.result()
+                if result:
+                    batch_data.append(result)
+            except Exception as e:
+                # Log error but don't stop
+                pass
+            
+            # D. Batch Save (Thread-safe because we are in the main thread consuming results)
+            if len(batch_data) >= BATCH_SIZE:
+                save_batch(batch_data, output_path)
+                batch_data = [] # Clear buffer
 
     # Save remaining
     if batch_data:

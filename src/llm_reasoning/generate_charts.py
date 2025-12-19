@@ -30,6 +30,11 @@ def generate_charts(input_file, assets_dir):
     plt.xlabel('Composite Score')
     plt.grid(axis='x', linestyle='--', alpha=0.7)
     
+    # Check if final_score exists
+    if 'final_score' not in top_50.columns:
+        print("Error: 'final_score' column missing.")
+        return
+    
     # Add values to bars
     for bar in bars:
         width = bar.get_width()
@@ -44,8 +49,8 @@ def generate_charts(input_file, assets_dir):
     print(f"Generated {output_path}")
 
 if __name__ == "__main__":
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    INPUT = os.path.join(base_dir, 'reports', 'top_50.csv')
-    OUTPUT_DIR = os.path.join(base_dir, 'reports', 'assets')
+    from config import settings
+    INPUT = os.path.join(settings.DATA_DIR, 'reports', 'top_50.csv')
+    OUTPUT_DIR = os.path.join(settings.DATA_DIR, 'reports', 'assets')
     
     generate_charts(INPUT, OUTPUT_DIR)

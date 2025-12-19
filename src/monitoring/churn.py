@@ -69,9 +69,8 @@ if __name__ == "__main__":
     print(report_text)
     
     # Save dummy report
-    import os
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    log_path = os.path.join(base_dir, 'reports', 'churn_log.md')
+    from config import settings
+    log_path = os.path.join(settings.DATA_DIR, 'reports', 'churn_log.md')
     
     with open(log_path, 'w') as f:
         f.write("# Churn Log (Sample)\n\n")
