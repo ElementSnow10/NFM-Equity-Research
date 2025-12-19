@@ -8,6 +8,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from src.monitoring import churn, alerts
+from src.llm_reasoning import prompts
 from config import settings
 
 def get_latest_two_snapshots(report_dir):
@@ -58,16 +59,29 @@ def generate_daily_brief():
                 rank = list(df_curr['ticker']).index(t) + 1
                 decision = churn.decide_churn(rank, []) # No alerts for new entry usually
                 report_lines.append(f"- **{t}** (Rank #{rank}): {decision['reason']}")
+                
+                # Generate LLM Prompt
+                prompt_text = prompts.generate_churn_prompt(row, "ADD", rank)
+                report_lines.append(f"  <details><summary>LLM Prompt</summary>\n\n  ```text\n  {prompt_text}\n  ```\n  </details>")
+                
             report_lines.append("")
                 
         if dropped_tickers:
             report_lines.append("## 🔴 Dropped Companies (Exited Top 50)")
             for t in dropped_tickers:
-                # We need data from prev file to see why potentially? 
-                # Or maybe current data if they just dropped rank but exist in features.
-                # Since we only have Top 50 snapshots, we might not have data for dropped items in 'df_curr'.
-                # We just list them.
-                report_lines.append(f"- **{t}**")
+                try:
+                    row = df_prev[df_prev['ticker'] == t].iloc[0]
+                    prev_rank = list(df_prev['ticker']).index(t) + 1
+                except IndexError:
+                    row = {}
+                    prev_rank = "N/A"
+                    
+                report_lines.append(f"- **{t}** (Prev Rank #{prev_rank})")
+                
+                # Generate LLM Prompt
+                # We don't know current rank (it's > 50), so pass 50+ or use 'N/A'
+                prompt_text = prompts.generate_churn_prompt(row, "REMOVE", ">50", prev_rank=prev_rank)
+                report_lines.append(f"  <details><summary>LLM Prompt</summary>\n\n  ```text\n  {prompt_text}\n  ```\n  </details>")
             report_lines.append("")
             
         # 2. Rank Movers (within Top 50)

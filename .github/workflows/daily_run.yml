@@ -6,6 +6,10 @@ on:
     - cron: '0 0 * * 1-5'
   workflow_dispatch:
 
+# Grant write permissions to the token
+permissions:
+  contents: write
+
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
@@ -25,10 +29,20 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         
     - name: Run Pipeline
+      # Timeout after 350 minutes (Just under 6h limit) to ensure we have time to commit if script handles timeouts gracefully
+      # For now, let's just run. pipeline_run.py handles errors but not timeouts.
       run: |
         python pipeline_run.py
         
-    - name: Upload Reports
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add data/processed/features.csv data/reports/
+        git commit -m "Auto-update: Daily Analysis & Data [skip ci]" || echo "No changes to commit"
+        git push
+        
+    - name: Upload Reports (Backup)
       uses: actions/upload-artifact@v3
       with:
         name: daily-reports
