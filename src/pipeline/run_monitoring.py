@@ -8,8 +8,9 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from src.monitoring import churn, alerts
-from src.llm_reasoning import prompts
+from src.llm_reasoning import generate_explanations
 from config import settings
+import json
 
 def get_latest_two_snapshots(report_dir):
     """
@@ -43,6 +44,34 @@ def generate_daily_brief():
     report_lines = []
     report_lines.append("# Daily NFM Model Brief")
     report_lines.append(f"Date: {os.path.basename(latest_file).replace('top_50_', '').replace('.csv', '')}\n")
+
+    # --- INTEGRATION: Generate Explanations ---
+    print(">>> Generating AI Explanations for the latest snapshot...")
+    prompt_path = os.path.join(settings.BASE_DIR, 'src', 'llm_reasoning', 'prompt_template.txt')
+    output_path = os.path.join(settings.DATA_DIR, 'reports', 'llm_explanations.json')
+    
+    try:
+        generate_explanations.generate_explanations(latest_file, prompt_path, output_path)
+    except Exception as e:
+        print(f"Warning: AI Explanation Generation Failed: {e}")
+    
+    # Load Explanations for Lookup
+    explanations_map = {}
+    if os.path.exists(output_path):
+        try:
+            with open(output_path, 'r') as f:
+                data = json.load(f)
+                for item in data:
+                    explanations_map[item['ticker']] = item.get('explanation', '')
+        except Exception as e:
+            print(f"Warning: Could not load explanations: {e}")
+
+    # Helper to extract Verdict
+    def get_verdict(ticker):
+        text = explanations_map.get(ticker, "")
+        if "4. Overall Verdict" in text:
+            return text.split("4. Overall Verdict")[1].strip().split('\n')[0]
+        return "No AI verdict available."
     
     if prev_file:
         df_prev = pd.read_csv(prev_file)
@@ -58,12 +87,9 @@ def generate_daily_brief():
                 row = df_curr[df_curr['ticker'] == t].iloc[0]
                 rank = list(df_curr['ticker']).index(t) + 1
                 decision = churn.decide_churn(rank, []) # No alerts for new entry usually
+                verdict = get_verdict(t)
                 report_lines.append(f"- **{t}** (Rank #{rank}): {decision['reason']}")
-                
-                # Generate LLM Prompt
-                prompt_text = prompts.generate_churn_prompt(row, "ADD", rank)
-                report_lines.append(f"  <details><summary>LLM Prompt</summary>\n\n  ```text\n  {prompt_text}\n  ```\n  </details>")
-                
+                report_lines.append(f"  > *AI Verdict*: {verdict}")
             report_lines.append("")
                 
         if dropped_tickers:
@@ -77,11 +103,6 @@ def generate_daily_brief():
                     prev_rank = "N/A"
                     
                 report_lines.append(f"- **{t}** (Prev Rank #{prev_rank})")
-                
-                # Generate LLM Prompt
-                # We don't know current rank (it's > 50), so pass 50+ or use 'N/A'
-                prompt_text = prompts.generate_churn_prompt(row, "REMOVE", ">50", prev_rank=prev_rank)
-                report_lines.append(f"  <details><summary>LLM Prompt</summary>\n\n  ```text\n  {prompt_text}\n  ```\n  </details>")
             report_lines.append("")
             
         # 2. Rank Movers (within Top 50)
@@ -100,7 +121,9 @@ def generate_daily_brief():
             report_lines.append("## 🚀 Significant Rank Movers")
             for t, diff, r in movers:
                 icon = "🔼" if diff > 0 else "🔻"
+                verdict = get_verdict(t)
                 report_lines.append(f"- {icon} **{t}**: {diff:+} positions (Now #{r})")
+                report_lines.append(f"  > *AI Verdict*: {verdict}")
             report_lines.append("")
 
     else:
