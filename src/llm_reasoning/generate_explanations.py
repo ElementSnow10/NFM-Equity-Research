@@ -105,9 +105,10 @@ def generate_explanations(input_file, prompt_file, output_file):
 
 if __name__ == "__main__":
     # Define paths relative to repo root
-    BASE = base_dir
-    INPUT = os.path.join(BASE, 'reports', 'top_50.csv')
+    from config import settings
+    BASE = settings.BASE_DIR
+    INPUT = os.path.join(settings.DATA_DIR, 'reports', 'top_50.csv')
     TEMPLATE = os.path.join(BASE, 'src', 'llm_reasoning', 'prompt_template.txt')
-    OUTPUT = os.path.join(BASE, 'reports', 'llm_explanations.json')
+    OUTPUT = os.path.join(settings.DATA_DIR, 'reports', 'llm_explanations.json')
     
     generate_explanations(INPUT, TEMPLATE, OUTPUT)
