@@ -262,7 +262,7 @@ def display_top_50_table(df):
     def highlight_alerts(row):
         """Apply row-wise styling based on alert status"""
         if '⚠️' in str(row['Has Alerts']):
-            return ['background-color: #fff3cd'] * len(row)  # Light yellow for alerts
+            return ['background-color: #fff3cd; color: black'] * len(row)  # Light yellow for alerts, black font
         return [''] * len(row)
     
     # Display the table
