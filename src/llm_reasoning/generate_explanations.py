@@ -46,10 +46,15 @@ def generate_explanations(input_file, prompt_file, output_file):
     logging.info(f"Generating explanations for {len(df)} companies...")
 
     # Configure Gemini
+    # Configure Gemini
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        logging.error("GEMINI_API_KEY not found in environment variables.")
-        sys.exit(1)
+        logging.warning("GEMINI_API_KEY not found. Skipping LLM generation and using placeholders.")
+        # Create dummy results for all rows
+        results = [{'ticker': row.get('ticker'), 'explanation': "LLM explanation skipped (Missing API Key)."} for _, row in df.iterrows()]
+        with open(output_file, 'w') as f:
+            json.dump(results, f, indent=2)
+        return
     
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-flash-latest')

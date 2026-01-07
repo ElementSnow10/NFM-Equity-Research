@@ -61,12 +61,15 @@ def run():
     # Save Latest
     output_path = os.path.join(settings.DATA_DIR, 'reports', 'top_50.csv')
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    top_50.to_csv(output_path, index=False)
+    
+    # Exclude lllm_prompt from CSV as it breaks parsing with multiline text
+    cols_to_save = [c for c in top_50.columns if c != 'llm_prompt']
+    top_50[cols_to_save].to_csv(output_path, index=False)
     
     # Save History
     history_path = os.path.join(settings.DATA_DIR, 'reports', 'history', f'top_50_{today_str}.csv')
     os.makedirs(os.path.dirname(history_path), exist_ok=True)
-    top_50.to_csv(history_path, index=False)
+    top_50[cols_to_save].to_csv(history_path, index=False)
     
     print(f"Top 50 list saved to {output_path}")
     print(f"History snapshot saved to {history_path}")

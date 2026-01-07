@@ -55,6 +55,7 @@ def run():
             
     # Remove processed from todo
     tickers_to_process = [t for t in all_tickers if t not in processed_tickers]
+    
     print(f"Tickers remaining to process: {len(tickers_to_process)}")
     
     if not tickers_to_process:
@@ -64,7 +65,7 @@ def run():
     # 3. Processing Loop (Parallelized)
     batch_data = []
     BATCH_SIZE = 10 
-    MAX_WORKERS = 5 # Moderate concurrency to respect API limits
+    MAX_WORKERS = 2 # Increased slightly, but keeping low to avoid rate limits
     
     import concurrent.futures
     
