@@ -1,5 +1,11 @@
-import alerts
-import churn
+import sys
+import os
+
+# Add project root to path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.monitoring import alerts
+from src.monitoring import churn
 
 def run_sanity_test():
     print("=== STARTING SANITY TEST ===\n")
