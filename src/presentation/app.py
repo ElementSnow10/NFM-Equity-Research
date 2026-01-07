@@ -137,11 +137,16 @@ def calculate_alert_count(row):
         alert_count += 1
     
     # Low score alert (if in top 50 but score is relatively low)
-    if row.get('final_score', 10) < 6.0:
+    # Score is on 0-5 scale
+    if row.get('final_score', 5.0) < 3.0:
         alert_count += 1
     
     # Negative FCF alert
     if row.get('fcf_margin', 0) < 0:
+        alert_count += 1
+        
+    # Negative Growth alert
+    if row.get('revenue_cagr', 0) < 0:
         alert_count += 1
     
     return alert_count
@@ -181,23 +186,27 @@ def generate_alerts_from_data(df):
         # Alert 2: Negative FCF
         fcf_margin = row.get('fcf_margin', 0)
         if fcf_margin < 0:
+            # Severity depends on how negative
+            severity = 'HIGH' if fcf_margin < -0.10 else 'MEDIUM'
             alerts_list.append({
                 'Company': company,
                 'Alert Type': 'NEGATIVE_FCF',
-                'Severity': 'HIGH',
+                'Severity': severity,
                 'Date': (current_date - timedelta(days=random.randint(0, 5))).strftime('%Y-%m-%d'),
                 'Message': f'Free Cash Flow margin is negative ({fcf_margin:.1%})'
             })
         
         # Alert 3: Low Score (relative to Top 50)
-        score = row.get('final_score', 10)
-        if score < 6.0:
+        # Note: Scores are on 0-5 scale based on weighted percentile ranking
+        score = row.get('final_score', 5.0)
+        if score < 3.0:  # Below 3.0 on 0-5 scale indicates weakness
+            severity = 'HIGH' if score < 2.5 else 'MEDIUM'
             alerts_list.append({
                 'Company': company,
                 'Alert Type': 'SCORE_DROP',
-                'Severity': 'MEDIUM',
+                'Severity': severity,
                 'Date': (current_date - timedelta(days=random.randint(0, 10))).strftime('%Y-%m-%d'),
-                'Message': f'Composite score below threshold ({score:.2f})'
+                'Message': f'Composite score below threshold ({score:.2f}/5.0)'
             })
         
         # Alert 4: Low Profitability
@@ -214,12 +223,25 @@ def generate_alerts_from_data(df):
         # Alert 5: Negative Growth
         revenue_cagr = row.get('revenue_cagr', 0)
         if revenue_cagr < 0:
+            severity = 'HIGH' if revenue_cagr < -0.10 else 'MEDIUM'
             alerts_list.append({
                 'Company': company,
                 'Alert Type': 'NEGATIVE_GROWTH',
-                'Severity': 'MEDIUM',
+                'Severity': severity,
                 'Date': (current_date - timedelta(days=random.randint(0, 7))).strftime('%Y-%m-%d'),
                 'Message': f'Revenue declining ({revenue_cagr:.1%} CAGR)'
+            })
+            
+        # Alert 6: Low Interest Coverage (New)
+        int_coverage = row.get('interest_coverage', 100)
+        if int_coverage < 3.0 and int_coverage > 0:  # Only alert if we have valid data
+            severity = 'HIGH' if int_coverage < 1.5 else 'MEDIUM'
+            alerts_list.append({
+                'Company': company,
+                'Alert Type': 'SOLVENCY_RISK',
+                'Severity': severity,
+                'Date': (current_date - timedelta(days=random.randint(0, 3))).strftime('%Y-%m-%d'),
+                'Message': f'Interest Coverage Ratio low ({int_coverage:.2f})'
             })
     
     # Convert to DataFrame
@@ -352,7 +374,7 @@ def display_company_details(company_ticker, top_50_df):
         col1, col2 = st.columns([1, 2])
         with col1:
             score = company_row.get('final_score', 0)
-            st.metric("Composite Score", f"{score:.2f}", help="Overall fundamental strength score")
+            st.metric("Composite Score", f"{score:.2f}/5.0", help="Overall fundamental strength score (0-5 scale)")
         
         with col2:
             st.markdown("**Key Strengths:**")
@@ -366,42 +388,51 @@ def display_company_details(company_ticker, top_50_df):
         
         with col1:
             st.markdown("**Profitability**")
-            roe = company_row.get('roe', 0)
-            roce = company_row.get('roce', 0)
-            st.metric("ROE", f"{roe:.1%}")
-            st.metric("ROCE", f"{roce:.1%}")
+            roe = pd.to_numeric(company_row.get('roe'), errors='coerce')
+            score_roe = pd.to_numeric(company_row.get('score_roe'), errors='coerce')
+            st.metric("ROE", f"{roe:.1%}" if pd.notna(roe) else "N/A", 
+                     delta=f"Score: {score_roe:.1f}" if pd.notna(score_roe) else None)
+            
+            roce = pd.to_numeric(company_row.get('roce'), errors='coerce')
+            score_roce = pd.to_numeric(company_row.get('score_roce'), errors='coerce')
+            st.metric("ROCE", f"{roce:.1%}" if pd.notna(roce) else "N/A", 
+                     delta=f"Score: {score_roce:.1f}" if pd.notna(score_roce) else None)
         
         with col2:
             st.markdown("**Growth**")
-            rev_cagr = company_row.get('revenue_cagr', 0)
-            profit_cagr = company_row.get('profit_cagr', 0)
-            st.metric("Revenue CAGR", f"{rev_cagr:.1%}" if pd.notna(rev_cagr) else "N/A")
-            st.metric("Profit CAGR", f"{profit_cagr:.1%}" if pd.notna(profit_cagr) else "N/A")
+            rev_cagr = pd.to_numeric(company_row.get('revenue_cagr'), errors='coerce')
+            score_rev = pd.to_numeric(company_row.get('score_revenue_cagr'), errors='coerce')
+            st.metric("Revenue CAGR", f"{rev_cagr:.1%}" if pd.notna(rev_cagr) else "N/A", 
+                     delta=f"Score: {score_rev:.1f}" if pd.notna(score_rev) else None)
+            
+            profit_cagr = pd.to_numeric(company_row.get('profit_cagr'), errors='coerce')
+            score_prof = pd.to_numeric(company_row.get('score_profit_cagr'), errors='coerce')
+            st.metric("Profit CAGR", f"{profit_cagr:.1%}" if pd.notna(profit_cagr) else "N/A",
+                     delta=f"Score: {score_prof:.1f}" if pd.notna(score_prof) else None)
         
         with col3:
             st.markdown("**Financial Health**")
-            debt_equity = company_row.get('debt_to_equity', 0)
-            st.metric("Debt/Equity", f"{debt_equity:.2f}")
+            debt_equity = pd.to_numeric(company_row.get('debt_to_equity'), errors='coerce')
+            score_de = pd.to_numeric(company_row.get('score_debt_to_equity'), errors='coerce')
+            st.metric("Debt/Equity", f"{debt_equity:.2f}" if pd.notna(debt_equity) else "N/A", 
+                     delta=f"Score: {score_de:.1f}" if pd.notna(score_de) else None)
             
-            # Color code based on debt level
-            if debt_equity < 0.5:
-                st.success("✅ Low Debt")
-            elif debt_equity < 1.0:
-                st.info("ℹ️ Moderate Debt")
-            else:
-                st.warning("⚠️ High Debt")
+            int_cov = pd.to_numeric(company_row.get('interest_coverage'), errors='coerce')
+            score_int = pd.to_numeric(company_row.get('score_interest_coverage'), errors='coerce')
+            st.metric("Int. Coverage", f"{int_cov:.2f}" if pd.notna(int_cov) else "N/A",
+                     delta=f"Score: {score_int:.1f}" if pd.notna(score_int) else None)
         
         with col4:
             st.markdown("**Cash Generation**")
-            fcf_margin = company_row.get('fcf_margin', 0)
-            st.metric("FCF Margin", f"{fcf_margin:.1%}" if pd.notna(fcf_margin) else "N/A")
+            fcf_margin = pd.to_numeric(company_row.get('fcf_margin'), errors='coerce')
+            score_fcf = pd.to_numeric(company_row.get('score_fcf_margin'), errors='coerce')
+            st.metric("FCF Margin", f"{fcf_margin:.1%}" if pd.notna(fcf_margin) else "N/A",
+                     delta=f"Score: {score_fcf:.1f}" if pd.notna(score_fcf) else None)
             
-            if fcf_margin > 0.10:
-                st.success("✅ Strong FCF")
-            elif fcf_margin > 0:
-                st.info("ℹ️ Positive FCF")
-            else:
-                st.error("❌ Negative FCF")
+            ocf_ratio = pd.to_numeric(company_row.get('ocf_ratio'), errors='coerce')
+            score_ocf = pd.to_numeric(company_row.get('score_ocf_ratio'), errors='coerce')
+            st.metric("OCF Ratio", f"{ocf_ratio:.2f}" if pd.notna(ocf_ratio) else "N/A",
+                     delta=f"Score: {score_ocf:.1f}" if pd.notna(score_ocf) else None)
     
     with tab2:
         st.markdown("### Active Alerts for this Company")
@@ -445,11 +476,12 @@ def display_company_details(company_ticker, top_50_df):
         st.markdown("#### Current Status")
         
         # Determine churn risk
-        if score >= 7.0 and alert_count == 0:
+        # Scores are on 0-5 scale
+        if score >= 4.0 and alert_count == 0:
             st.success("✅ **STABLE** - Company is secure in Top 50")
             churn_risk = "Low"
             recommendation = "Continue monitoring. No action needed."
-        elif score >= 6.0 and alert_count <= 2:
+        elif score >= 3.5 and alert_count <= 2:
             st.info("ℹ️ **WATCH** - Company is stable but should be monitored")
             churn_risk = "Medium"
             recommendation = "Monitor closely for any deterioration in metrics."
@@ -462,13 +494,13 @@ def display_company_details(company_ticker, top_50_df):
         
         with col1:
             st.metric("Churn Risk", churn_risk)
-            st.metric("Current Score", f"{score:.2f}")
+            st.metric("Current Score", f"{score:.2f}/5.0")
         
         with col2:
             st.metric("Active Alerts", alert_count)
             
             # Score threshold
-            threshold = 6.0
+            threshold = 3.5
             if score >= threshold:
                 st.metric("Above Threshold", f"+{score - threshold:.2f}")
             else:

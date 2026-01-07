@@ -58,7 +58,13 @@ def run():
     from datetime import datetime
     today_str = datetime.now().strftime('%Y-%m-%d')
     
-    # Save Latest
+    # Save Full Scored List (All Companies)
+    full_output_path = os.path.join(settings.DATA_DIR, 'reports', 'all_companies_scores.csv')
+    cols_to_save_full = [c for c in scored_df.columns if c != 'llm_prompt']
+    scored_df[cols_to_save_full].to_csv(full_output_path, index=False)
+    print(f"Full scored list saved to {full_output_path} ({len(scored_df)} companies)")
+    
+    # Save Latest Top 50
     output_path = os.path.join(settings.DATA_DIR, 'reports', 'top_50.csv')
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
