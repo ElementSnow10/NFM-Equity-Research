@@ -12,7 +12,8 @@ def fetch_financials(ticker_symbol):
                              Suffix will be added from settings.
     
     Returns:
-        dict: Dictionary containing 'financials', 'balance_sheet', 'cashflow' DataFrames.
+        dict: Dictionary containing 'financials', 'balance_sheet', 'cashflow' DataFrames,
+              plus 'info' dict and 'history' DataFrame.
               Returns None if fetch fails.
     """
     try:
@@ -24,6 +25,17 @@ def fetch_financials(ticker_symbol):
         balance_sheet = stock.balance_sheet
         cashflow = stock.cashflow
         
+        # Fetching price history (1 Year) for Price Growth metric
+        # period='1y' gives daily data for last year
+        history = stock.history(period="1y")
+        
+        # Fetching info (Market Cap, PEG, etc.)
+        # Note: info fetching can be slow or flaky, but it's needed for Market Cap & PEG
+        try:
+            info = stock.info
+        except Exception:
+            info = {}
+        
         if financials.empty or balance_sheet.empty or cashflow.empty:
             print(f"Warning: Missing data for {full_ticker}")
             return None
@@ -31,7 +43,9 @@ def fetch_financials(ticker_symbol):
         return {
             "financials": financials,
             "balance_sheet": balance_sheet,
-            "cashflow": cashflow
+            "cashflow": cashflow,
+            "history": history,
+            "info": info
         }
         
     except Exception as e:
